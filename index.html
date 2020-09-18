@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+
+<html lang="en">
+ <head>
+  <meta charset="UTF-8" />
+  <title>Ray tracer</title>
+  <script src="maths.js"></script>
+  <script src="raytracer.js"></script>
+  <script src="entities.js"></script>
+  <script>
+var panel, panel2, rt, rt2;
+
+function showInfo(e) {
+    var rect = e.target.getBoundingClientRect();
+    var x = e.clientX - rect.left; //x position within the element.
+    var y = e.clientY - rect.top;  //y position within the element.
+    var info = rt.getInfo(x, y);
+    var info2 = rt2.getInfo(x, y);
+    panel.innerHTML = "<p>(" + x + ", " + y + ")</p>";
+    panel.innerHTML += "<p>Colour: " + JSON.stringify(info.colour) + "</p>";
+    panel.innerHTML += "<p>Intersections: " + JSON.stringify(info.intersections) + "</p>";
+    panel2.innerHTML = "<p>(" + x + ", " + y + ")</p>";
+    panel2.innerHTML += "<p>Colour: " + JSON.stringify(info2.colour) + "</p>";
+    panel2.innerHTML += "<p>Intersections: " + JSON.stringify(info2.intersections) + "</p>";
+    
+}
+
+function init() {
+    panel = document.getElementById("info");
+    panel2 = document.getElementById("info2");
+    
+    var rtcvs = document.getElementById("rtcvs", { alpha: false });
+    rtcvs.onmousemove = showInfo;
+    rtcvs.onmouseout = function (e) {panel.innerHTML = ""; panel2.innerHTML = "";};
+    var rtctx = rtcvs.getContext("2d");
+    
+    var rtcvs2 = document.getElementById("rtcvs2", { alpha: false });
+    rtcvs2.onmousemove = showInfo;
+    rtcvs.onmouseout = function (e) {panel.innerHTML = ""; panel2.innerHTML = "";};
+    var rtctx2 = rtcvs2.getContext("2d");
+    
+    var red = {ka: {r: 1, g: 0, b: 0}, kd: {r: 1, g: 0, b: 0}, ks: {r: 0.7, g: 0.5, b: 0.5}, se: 4, refl: 0};
+    var silver = {ka: {r: 0.7, g: 0.7, b: 0.9}, kd: {r: 0.7, g: 0.7, b: 0.9}, ks: {r: 0.7, g: 0.7, b: 0.9}, se: 200, refl: 0.3};
+    var blue = {ka: {r: 0, g: 0.1, b: 0.8}, kd: {r: 0, g: 0.1, b: 0.8}, ks: {r: 0, g: 0.7, b: 0.9}, se: 100, refl: 0};
+    
+    var torus1 = new Torus(3, 0.5, blue);
+    torus1.xRotation = 1.5;
+    torus1.yRotation = 1;
+    torus1.translation = new Vec3(-2, 0, 10);
+    torus1.scaling = new Vec3(1, 1, 1);
+    
+    var torus2 = new Torus(3, 0.5, silver);
+    torus2.xRotation = -0.5;
+    torus2.yRotation = 1;
+    torus2.translation = new Vec3(0, 0, 8);
+    torus2.scaling = new Vec3(1, 1, 1);
+    
+    var sphere = new Sphere(1, red);
+    sphere.translation = new Vec3(0, 0, 5);
+    
+    var scene = {
+        entities: [torus1, torus2],
+        lights: [{location: new Vec3(8, 7, 7), colour: {r: 1, g: 1, b: 1}}],
+        backgroundColour: {r: 0.8, g: 0.8, b: 0.8},
+        ambientLight: {r: 0.4, g: 0.4, b: 0.4},
+        samples: 9,
+        blockSize: 1,
+        maxBounces: 0
+    };
+    
+    var scene2 = {
+        entities: [torus1, torus2],
+        lights: [{location: new Vec3(8, 7, 7), colour: {r: 1, g: 1, b: 1}}],
+        backgroundColour: {r: 0.8, g: 0.8, b: 0.8},
+        ambientLight: {r: 0.4, g: 0.4, b: 0.4},
+        samples: 9,
+        blockSize: 1,
+        maxBounces: 5
+    };
+    
+    rt = new RayTracer(rtctx, scene);
+    rt.trace();
+    
+    rt2 = new RayTracer(rtctx2, scene2);
+    rt2.trace();
+}
+
+document.addEventListener("DOMContentLoaded", init, false);
+  </script>
+ </head>
+ <body>
+  <canvas id="rtcvs" width="800" height="600"></canvas>
+  <canvas id="rtcvs2" width="800" height="600"></canvas>
+  <div id="info"></div>
+  <div id="info2"></div>
+ </body>
+</html>
